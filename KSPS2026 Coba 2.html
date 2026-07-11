@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KSPS 2026: Labirin Pikiran</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3D45AA',
+                        'primary-dark': '#2B317D',
+                        'orange-dark': '#DA3D20',
+                        'orange-bright': '#F8843F',
+                        'yellow-soft': '#FFF19B',
+                    },
+                    fontFamily: {
+                        head: ['Outfit', 'sans-serif'],
+                        body: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hero-grad': 'linear-gradient(135deg, #3D45AA 0%, #F8843F 60%, #FFF19B 100%)',
+                        'btn-grad': 'linear-gradient(90deg, #DA3D20 0%, #F8843F 100%)',
+                        'card-grad': 'linear-gradient(135deg, rgba(61,69,170,0.08), rgba(248,132,63,0.12))',
+                        'footer-grad': 'linear-gradient(135deg, #3D45AA 0%, #2B317D 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS for Animations & Glassmorphism -->
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; background-color: #fafafa; }
+        h1, h2, h3, h4, h5, h6, .font-head { font-family: 'Outfit', sans-serif; }
+
+        /* Loader */
+        #loader { transition: opacity 0.5s ease; z-index: 9999; }
+        .spinner { border-top-color: #DA3D20; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .glass-dark {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Nav active state */
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: ''; position: absolute; width: 0; height: 2px;
+            bottom: -4px; left: 0; background: #DA3D20; transition: width 0.3s;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        /* Floating Animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 7s ease-in-out infinite 2s; }
+
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(90deg, #3D45AA 0%, #DA3D20 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased selection:bg-orange-bright selection:text-white">
+
+    <!-- Loading Screen -->
+    <div id="loader" class="fixed inset-0 bg-white flex flex-col justify-center items-center h-screen w-screen">
+        <div class="w-16 h-16 border-4 border-gray-200 border-t-4 border-t-orange-dark rounded-full animate-spin"></div>
+        <h2 class="font-head text-2xl font-bold mt-4 text-primary animate-pulse">Memuat Labirin Pikiran...</h2>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-4 px-6 md:px-12 lg:px-24">
+        <div class="flex justify-between items-center rounded-full px-6 py-3 transition-all duration-300" id="nav-container">
+            <a href="#" class="font-head font-bold text-2xl text-primary flex items-center gap-2">
+                <i class="ph-fill ph-aperture text-orange-dark"></i> KSPS 2026
+            </a>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex gap-8 font-medium text-sm">
+                <a href="#hero" class="nav-link active hover:text-orange-dark transition">Home</a>
+                <a href="#about" class="nav-link hover:text-orange-dark transition">About</a>
+                <a href="#timeline" class="nav-link hover:text-orange-dark transition">Timeline</a>
+                <a href="#events" class="nav-link hover:text-orange-dark transition">Events & Catalog</a>
+                <a href="#gallery" class="nav-link hover:text-orange-dark transition">Gallery</a>
+            </div>
+
+            <a href="#events" class="hidden lg:inline-block bg-btn-grad text-white px-6 py-2.5 rounded-full font-semibold shadow-lg hover:shadow-orange-dark/30 hover:scale-105 transition-all">Explore Event</a>
+
+            <!-- Mobile Toggle -->
+            <button class="lg:hidden text-primary text-3xl" id="mobile-menu-btn">
+                <i class="ph ph-list"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white/90 backdrop-blur-lg z-40 hidden flex-col justify-center items-center gap-6 font-head text-2xl font-bold text-primary opacity-0 transition-opacity">
+        <button id="close-menu-btn" class="absolute top-6 right-6 text-4xl"><i class="ph ph-x"></i></button>
+        <a href="#hero" class="mobile-link">Home</a>
+        <a href="#about" class="mobile-link">About</a>
+        <a href="#timeline" class="mobile-link">Timeline</a>
+        <a href="#events" class="mobile-link">Events</a>
+        <a href="#gallery" class="mobile-link">Gallery</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center overflow-hidden bg-hero-grad text-white">
+        <!-- Floating Elements -->
+        <div class="absolute top-1/4 left-10 w-32 h-32 bg-white/20 rounded-full blur-2xl animate-float"></div>
+        <div class="absolute bottom-1/4 right-20 w-64 h-64 bg-yellow-soft/30 rounded-full blur-3xl animate-float-delayed"></div>
+        
+        <div class="container mx-auto px-6 md:px-12 lg:px-24 z-10 grid lg:grid-cols-2 gap-12 items-center">
+            <div class="reveal active mt-20 lg:mt-0">
+                <div class="inline-block glass-dark px-4 py-2 rounded-full text-sm font-semibold mb-6 shadow-sm border border-white/30 backdrop-blur-md">
+                    ✨ Pameran Seni Inklusif
+                </div>
+                <h1 class="font-head text-5xl md:text-7xl font-extrabold leading-tight mb-4 drop-shadow-lg">
+                    Labirin <br> Pikiran.
+                </h1>
+                <p class="text-lg md:text-xl font-light mb-8 opacity-90 max-w-lg">
+                    Merayakan Kreativitas, Inklusivitas, dan Ruang Berkarya Bersama.
+                </p>
+                
+                <div class="glass-dark p-6 rounded-3xl mb-8 flex flex-col md:flex-row gap-6 border border-white/20">
+                    <div>
+                        <p class="text-sm font-light text-yellow-soft">Pre-Event</p>
+                        <p class="font-semibold text-xl">30 Okt 2026</p>
+                    </div>
+                    <div class="hidden md:block w-px bg-white/30"></div>
+                    <div>
+                        <p class="text-sm font-light text-yellow-soft">Main Event</p>
+                        <p class="font-semibold text-xl">22–23 Nov 2026</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <a href="#events" class="bg-white text-primary px-8 py-3.5 rounded-full font-bold shadow-xl hover:bg-yellow-soft transition-all transform hover:-translate-y-1">Explore Event</a>
+                    <a href="#gallery" class="glass-dark px-8 py-3.5 rounded-full font-bold hover:bg-white/20 transition-all">View Gallery</a>
+                </div>
+            </div>
+
+            <!-- Hero Illustration / 3D Element Placeholder -->
+            <div class="hidden lg:flex justify-center items-center reveal active">
+                <div class="relative w-full h-[500px]">
+                    <img src="https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?auto=format&fit=crop&q=80&w=800" alt="Abstract Art" class="absolute inset-0 w-full h-full object-cover rounded-[40px] shadow-2xl transform rotate-3 animate-float border-4 border-white/20">
+                    <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-3xl shadow-xl animate-float-delayed text-primary">
+                        <i class="ph-fill ph-palette text-4xl text-orange-bright mb-2"></i>
+                        <p class="font-bold">Unlimited</p>
+                        <p class="text-sm">Creativity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-white relative overflow-hidden">
+        <div class="absolute -left-32 top-0 w-96 h-96 bg-card-grad rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+        <div class="container mx-auto px-6 md:px-12 lg:px-24 z-10 relative">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <h2 class="font-head text-4xl md:text-5xl font-bold mb-6 text-primary">About <span class="text-gradient">KSPS 2026</span></h2>
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                        <strong class="text-gray-900">KSPS 2026: Labirin Pikiran</strong> merupakan rangkaian acara pameran seni yang mengangkat tema inklusivitas melalui kolaborasi antara seni, kreativitas, dan masyarakat.
+                    </p>
+                    <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                        Acara ini menghadirkan ruang apresiasi terhadap karya seni sekaligus mempertemukan masyarakat dengan teman-teman penyandang disabilitas melalui berbagai aktivitas kreatif, pameran, dan pertunjukan seni.
+                    </p>
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Diharapkan tercipta pengalaman yang tidak hanya menghibur, tetapi juga membangun empati, kolaborasi, serta kesadaran mengenai pentingnya ruang berkesenian yang inklusif bagi semua.
+                    </p>
+                </div>
+                
+                <!-- Counters -->
+                <div class="grid grid-cols-2 gap-6 reveal delay-200">
+                    <div class="bg-card-grad p-8 rounded-[32px] text-center border border-white hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                        <h3 class="font-head text-5xl font-extrabold text-primary mb-2 counter" data-target="2">0</h3>
+                        <p class="font-medium text-gray-600">Event Utama</p>
+                    </div>
+                    <div class="bg-card-grad p-8 rounded-[32px] text-center border border-white hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                        <h3 class="font-head text-5xl font-extrabold text-orange-dark mb-2"><span class="counter" data-target="50">0</span>+</h3>
+                        <p class="font-medium text-gray-600">Karya Seni</p>
+                    </div>
+                    <div class="bg-card-grad p-8 rounded-[32px] text-center border border-white hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                        <h3 class="font-head text-5xl font-extrabold text-orange-bright mb-2"><span class="counter" data-target="2000">0</span>+</h3>
+                        <p class="font-medium text-gray-600">Pengunjung</p>
+                    </div>
+                    <div class="bg-card-grad p-8 rounded-[32px] text-center border border-white hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                        <h3 class="font-head text-5xl font-extrabold text-primary mb-2">∞</h3>
+                        <p class="font-medium text-gray-600">Kreativitas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="py-24 bg-gray-50">
+        <div class="container mx-auto px-6 md:px-12 lg:px-24">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-head text-4xl font-bold text-primary mb-4">Event <span class="text-gradient">Timeline</span></h2>
+                <p class="text-gray-600">Perjalanan rangkaian acara Labirin Pikiran.</p>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-0 reveal">
+                <!-- Line -->
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-primary to-orange-dark hidden md:block -z-0 rounded-full"></div>
+                
+                <!-- Node 1 -->
+                <div class="z-10 bg-white p-6 rounded-3xl shadow-lg border border-gray-100 w-full md:w-1/4 text-center transform hover:scale-105 transition-all">
+                    <div class="w-16 h-16 mx-auto bg-primary text-white rounded-full flex items-center justify-center text-2xl mb-4 shadow-lg shadow-primary/30">🎨</div>
+                    <h4 class="font-head font-bold text-lg mb-1">Pre-Event</h4>
+                    <p class="text-orange-dark text-sm font-semibold mb-2">30 Okt 2026</p>
+                    <p class="text-gray-500 text-sm">Creative Sharing with Friends</p>
+                </div>
+
+                <!-- Node 2 -->
+                <div class="z-10 bg-white p-6 rounded-3xl shadow-lg border border-gray-100 w-full md:w-1/4 text-center transform hover:scale-105 transition-all">
+                    <div class="w-16 h-16 mx-auto bg-orange-dark text-white rounded-full flex items-center justify-center text-2xl mb-4 shadow-lg shadow-orange-dark/30">🖼️</div>
+                    <h4 class="font-head font-bold text-lg mb-1">Main Event Day 1</h4>
+                    <p class="text-orange-dark text-sm font-semibold mb-2">22 Nov 2026</p>
+                    <p class="text-gray-500 text-sm">Art & Digital Exhibition</p>
+                </div>
+
+                <!-- Node 3 -->
+                <div class="z-10 bg-white p-6 rounded-3xl shadow-lg border border-gray-100 w-full md:w-1/4 text-center transform hover:scale-105 transition-all">
+                    <div class="w-16 h-16 mx-auto bg-orange-bright text-white rounded-full flex items-center justify-center text-2xl mb-4 shadow-lg shadow-orange-bright/30">🎭</div>
+                    <h4 class="font-head font-bold text-lg mb-1">Main Event Day 2</h4>
+                    <p class="text-orange-dark text-sm font-semibold mb-2">23 Nov 2026</p>
+                    <p class="text-gray-500 text-sm">Performing Arts Celebration</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events & Catalog (Tabs) -->
+    <section id="events" class="py-24 bg-white relative">
+        <div class="container mx-auto px-6 md:px-12 lg:px-24">
+            
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap justify-center gap-4 mb-16 reveal">
+                <button class="tab-btn active bg-primary text-white px-8 py-3 rounded-full font-semibold shadow-md transition" data-tab="pre-event">Pre-Event</button>
+                <button class="tab-btn bg-gray-100 text-gray-600 hover:bg-gray-200 px-8 py-3 rounded-full font-semibold transition" data-tab="day1"> Day 1</button>
+                <button class="tab-btn bg-gray-100 text-gray-600 hover:bg-gray-200 px-8 py-3 rounded-full font-semibold transition" data-tab="day2"> Day 2</button>
+            </div>
+
+            <!-- Pre-Event Content -->
+            <div id="pre-event" class="tab-content animate-fade-in">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="text-orange-dark font-bold text-sm tracking-widest uppercase mb-2 block">30 Oktober 2026 • Panti Asuhan Bina Remaja</span>
+                        <h2 class="font-head text-4xl font-bold text-primary mb-6">Creative Sharing with Friends</h2>
+                        <p class="text-gray-600 mb-8 leading-relaxed">
+                            Sebelum acara utama berlangsung, KSPS 2026 mengunjungi Panti Asuhan Bina Remaja Yogyakarta untuk melakukan kegiatan kreatif bersama teman-teman penyandang disabilitas. Kegiatan ini bertujuan menciptakan ruang interaksi, kolaborasi, dan ekspresi kreativitas.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex gap-4 p-4 rounded-2xl bg-card-grad hover:shadow-md transition">
+                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shadow-sm">🎨</div>
+                                <div>
+                                    <h4 class="font-head font-bold text-lg">Melukis Bersama</h4>
+                                    <p class="text-gray-500 text-sm">Mengekspresikan ide dan cerita. Hasil karya akan dipamerkan pada Main Event.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 rounded-2xl bg-card-grad hover:shadow-md transition">
+                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shadow-sm">📿</div>
+                                <div>
+                                    <h4 class="font-head font-bold text-lg">Membuat Gelang</h4>
+                                    <p class="text-gray-500 text-sm">Melatih ketelitian dan membangun interaksi antar peserta.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=800" alt="Melukis bersama" class="rounded-[32px] shadow-2xl">
+                        <div class="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4">
+                            <i class="ph-fill ph-heart text-3xl text-orange-dark"></i>
+                            <div>
+                                <p class="font-bold text-primary">Inklusivitas</p>
+                                <p class="text-xs text-gray-500">Ruang tanpa batas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Event Day 1 / Catalog -->
+            <div id="day1" class="tab-content hidden animate-fade-in">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-orange-dark font-bold text-sm tracking-widest uppercase mb-2 block">22 November 2026</span>
+                    <h2 class="font-head text-4xl font-bold text-primary mb-6">Art Exhibition & Digital Catalog</h2>
+                    <p class="text-gray-600">Pameran seni yang menampilkan karya dari kegiatan Pre-Event serta komunitas seni. Jelajahi cerita dan makna di balik setiap karya melalui pameran fisik maupun katalog digital interaktif kami.</p>
+                </div>
+
+                <!-- Digital Artwork Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 artwork-card" data-title="Harmony of Colors" data-artist="Alya Putri" data-category="Acrylic Painting" data-desc="Karya ini menggambarkan harmoni emosi manusia yang diekspresikan melalui perpaduan warna-warna cerah dan kontras, dibuat selama sesi melukis bersama." data-img="https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=500&q=80">
+                        <img src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=500&q=80" alt="Art" class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary-dark/90 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white">
+                            <span class="bg-orange-bright text-xs px-2 py-1 rounded mb-2 w-max">Acrylic Painting</span>
+                            <h3 class="font-head font-bold text-xl mb-1">Harmony of Colors</h3>
+                            <p class="text-sm text-yellow-soft">Oleh Alya Putri</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 artwork-card" data-title="Blooming Hope" data-artist="Raka Prasetyo" data-category="Canvas Painting" data-desc="Simbol harapan yang selalu tumbuh meski di tengah keterbatasan." data-img="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=500&q=80">
+                        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=500&q=80" alt="Art" class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary-dark/90 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white">
+                            <span class="bg-orange-bright text-xs px-2 py-1 rounded mb-2 w-max">Canvas Painting</span>
+                            <h3 class="font-head font-bold text-xl mb-1">Blooming Hope</h3>
+                            <p class="text-sm text-yellow-soft">Oleh Raka Prasetyo</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 artwork-card" data-title="Infinite Smile" data-artist="Nadia Rahma" data-category="Mixed Media" data-desc="Eksplorasi media campuran untuk menggambarkan kebahagiaan tanpa batas." data-img="https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=500&q=80">
+                        <img src="https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=500&q=80" alt="Art" class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary-dark/90 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white">
+                            <span class="bg-orange-bright text-xs px-2 py-1 rounded mb-2 w-max">Mixed Media</span>
+                            <h3 class="font-head font-bold text-xl mb-1">Infinite Smile</h3>
+                            <p class="text-sm text-yellow-soft">Oleh Nadia Rahma</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 artwork-card" data-title="Silent Forest" data-artist="Fajar Saputra" data-category="Landscape" data-desc="Ketenangan jiwa direpresentasikan melalui alam liar yang damai." data-img="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=500&q=80">
+                        <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=500&q=80" alt="Art" class="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary-dark/90 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white">
+                            <span class="bg-orange-bright text-xs px-2 py-1 rounded mb-2 w-max">Landscape</span>
+                            <h3 class="font-head font-bold text-xl mb-1">Silent Forest</h3>
+                            <p class="text-sm text-yellow-soft">Oleh Fajar Saputra</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-12">
+                    <button class="bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-full font-semibold transition-all">Load More Artworks</button>
+                </div>
+            </div>
+
+            <!-- Main Event Day 2 -->
+            <div id="day2" class="tab-content hidden animate-fade-in">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-orange-dark font-bold text-sm tracking-widest uppercase mb-2 block">23 November 2026</span>
+                    <h2 class="font-head text-4xl font-bold text-primary mb-6">Performing Arts Celebration</h2>
+                    <p class="text-gray-600">Puncak acara berupa pertunjukan seni yang kolaboratif dan memukau.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white p-8 rounded-[32px] shadow-lg border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                        <div class="w-16 h-16 bg-yellow-soft rounded-2xl flex items-center justify-center mb-6 text-3xl">🎭</div>
+                        <h3 class="font-head font-bold text-xl mb-3 text-primary">Pertunjukan Teman Difabel</h3>
+                        <p class="text-gray-600 text-sm">Menampilkan kreativitas luar biasa dan bakat seni panggung dari teman-teman penyandang disabilitas.</p>
+                    </div>
+                    
+                    <div class="bg-white p-8 rounded-[32px] shadow-lg border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                        <div class="w-16 h-16 bg-card-grad rounded-2xl flex items-center justify-center mb-6 text-3xl">🌳</div>
+                        <h3 class="font-head font-bold text-xl mb-3 text-primary">Teater Komunitas Seni</h3>
+                        <p class="text-gray-600 text-sm">Pertunjukan teater memukau bertema alam, kehidupan, manusia, dan keharmonisan lingkungan.</p>
+                    </div>
+
+                    <div class="bg-primary p-8 rounded-[32px] shadow-xl text-white hover:-translate-y-2 transition-transform duration-300">
+                        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 text-3xl">🎤</div>
+                        <h3 class="font-head font-bold text-xl mb-3 text-yellow-soft">Guest Star Performance</h3>
+                        <p class="text-white/80 text-sm">Penampilan musisi penutup acara yang akan memeriahkan malam puncak Labirin Pikiran.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal for Artwork -->
+    <div id="artwork-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-primary-dark/80 backdrop-blur-sm" id="modal-backdrop"></div>
+        <div class="relative bg-white rounded-[32px] overflow-hidden w-full max-w-4xl shadow-2xl flex flex-col md:flex-row z-10 scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <button id="close-modal" class="absolute top-4 right-4 z-20 bg-white/50 backdrop-blur rounded-full w-10 h-10 flex items-center justify-center text-primary hover:bg-orange-dark hover:text-white transition"><i class="ph ph-x text-xl"></i></button>
+            <div class="md:w-1/2 h-64 md:h-auto">
+                <img id="modal-img" src="" alt="Artwork" class="w-full h-full object-cover">
+            </div>
+            <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-card-grad">
+                <span id="modal-category" class="text-orange-dark font-semibold text-sm mb-2">Category</span>
+                <h2 id="modal-title" class="font-head text-3xl font-bold text-primary mb-2">Title</h2>
+                <p class="text-gray-500 italic mb-6">Karya oleh <span id="modal-artist" class="font-semibold text-gray-800">Artist</span></p>
+                <p id="modal-desc" class="text-gray-600 leading-relaxed mb-8">Description goes here.</p>
+                
+                <div class="mt-auto p-4 bg-white rounded-2xl border border-gray-100 flex items-center gap-4">
+                    <i class="ph ph-qr-code text-4xl text-primary"></i>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase">Digital Exhibition</p>
+                        <p class="text-sm text-primary font-bold">Scan at the physical gallery</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery (Masonry) -->
+    <section id="gallery" class="py-24 bg-gray-50">
+        <div class="container mx-auto px-6 md:px-12 lg:px-24">
+            <div class="text-center mb-12 reveal">
+                <h2 class="font-head text-4xl font-bold text-primary mb-4">Event <span class="text-gradient">Gallery</span></h2>
+            </div>
+            <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 reveal">
+                <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?auto=format&fit=crop&w=500&q=80" alt="Gallery" class="w-full rounded-2xl cursor-pointer hover:scale-105 transition duration-300 shadow-md">
+                <img src="https://images.unsplash.com/photo-1501366062246-723b4d3e4eb6?auto=format&fit=crop&w=500&q=80" alt="Gallery" class="w-full rounded-2xl cursor-pointer hover:scale-105 transition duration-300 shadow-md">
+                <img src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=500&q=80" alt="Gallery" class="w-full rounded-2xl cursor-pointer hover:scale-105 transition duration-300 shadow-md">
+                <img src="https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?auto=format&fit=crop&w=500&q=80" alt="Gallery" class="w-full rounded-2xl cursor-pointer hover:scale-105 transition duration-300 shadow-md">
+                <img src="https://images.unsplash.com/photo-1560440021-33f9b867899d?auto=format&fit=crop&w=500&q=80" alt="Gallery" class="w-full rounded-2xl cursor-pointer hover:scale-105 transition duration-300 shadow-md">
+            </div>
+        </div>
+    </section>
+
+    <!-- Kabar Terbaru / News -->
+    <section class="py-24 bg-white">
+        <div class="container mx-auto px-6 md:px-12 lg:px-24">
+            <h2 class="font-head text-4xl font-bold text-primary mb-12 reveal">Kabar <span class="text-gradient">Terbaru</span></h2>
+            <div class="grid md:grid-cols-3 gap-8 reveal">
+                <!-- News Card -->
+                <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=500&q=80" alt="News" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <span class="text-xs text-orange-dark font-semibold">Update • 15 Okt 2026</span>
+                        <h4 class="font-head font-bold text-lg text-primary mt-2 mb-2">Persiapan Pre-Event Berjalan Lancar</h4>
+                        <p class="text-gray-600 text-sm">Tim KSPS telah melakukan kunjungan awal ke Panti Asuhan Bina Remaja...</p>
+                    </div>
+                </div>
+                <!-- News Card -->
+                <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <img src="https://images.unsplash.com/photo-1561214115-f1f115335031?auto=format&fit=crop&w=500&q=80" alt="News" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <span class="text-xs text-orange-dark font-semibold">Pengumuman • 10 Okt 2026</span>
+                        <h4 class="font-head font-bold text-lg text-primary mt-2 mb-2">Pendaftaran Volunteer Dibuka</h4>
+                        <p class="text-gray-600 text-sm">Mari bergabung menjadi bagian dari acara pameran seni paling inklusif tahun ini...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sponsor & Media Partner Section -->
+    <section id="sponsorship" class="py-20 bg-gray-50 border-t border-gray-200">
+        <div class="container mx-auto px-6 md:px-12 lg:px-24 relative z-10">
+            <div class="text-center mb-12 reveal">
+                <h2 class="font-head text-4xl font-bold text-primary mb-4">Didukung <span class="text-gradient">Oleh</span></h2>
+                <p class="text-gray-600">Sponsor dan Media Partner yang turut menyukseskan acara kami.</p>
+            </div>
+            
+            <div class="space-y-16 reveal">
+                <!-- Sponsor -->
+                <div>
+                    <h3 class="font-head text-2xl font-semibold text-center text-orange-dark mb-8">Sponsor</h3>
+                    <div class="flex flex-wrap justify-center gap-6 md:gap-20 items-center">
+                        
+                        <!-- Logo BCA -->
+                        <div class="w-80 h-40 shadow-sm flex items-center justify-center p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <img src="Logo BCA_Biru.png" alt="Logo BCA" class="w-full h-full object-contain">
+                        </div>
+
+                        <!-- Logo Astra -->
+                        <div class="w-80 h-40 flex items-center justify-center p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <img src="PT Astra.png" alt="Logo Astra" class="w-full h-full object-contain">
+                        </div>
+
+                        <!-- Logo KitaBisa -->
+                        <div class="w-80 h-40 shadow-sm flex items-center justify-center p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <img src="KitaBisa.png" alt="Logo KitaBisa" class="w-full h-full object-contain">
+                        </div>
+
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-head text-2xl font-semibold text-center text-orange-dark mb-20">Media Partner</h3>
+                    <div class="flex flex-wrap justify-center gap-8 md:gap-16 items-center">
+                        
+                        <!-- Logo 1 -->
+                        <div class="w-40 h-20 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-center p-2 text-gray-400 font-bold hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <img src="Prambors.svg" alt="Logo Prambors" class="w-full h-full object-contain">
+                        </div>
+
+                        <!-- Logo 2 -->
+                        <div class="w-40 h-20 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-center text-gray-400 font-bold hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            Prambors
+                        </div>
+
+                        <!-- Logo 3 -->
+                        <div class="w-40 h-20 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-center text-gray-400 font-bold hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            Kompas
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-footer-grad text-white pt-20 pb-8 relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20"></div>
+        <div class="container mx-auto px-6 md:px-12 lg:px-24 relative z-10">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                <div class="lg:col-span-2">
+                    <a href="#" class="font-head font-bold text-3xl flex items-center gap-2 mb-6">
+                        <i class="ph-fill ph-aperture text-orange-bright"></i> KSPS 2026
+                    </a>
+                    <p class="text-white/70 max-w-sm mb-6">Labirin Pikiran: Merayakan Kreativitas, Inklusivitas, dan Ruang Berkarya Bersama.</p>
+                    <div class="flex gap-4">
+                        <a href="https://instagram.com/adityfbrt" target="_blank" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-orange-bright transition"><i class="ph-fill ph-instagram-logo text-xl"></i></a>
+                        <a href="mailto:KSPS2026@gmail.com" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-orange-bright transition"><i class="ph-fill ph-envelope text-xl"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-head font-bold text-xl mb-6">Navigation</h4>
+                    <ul class="space-y-3 text-white/70">
+                        <li><a href="#about" class="hover:text-yellow-soft transition">About</a></li>
+                        <li><a href="#timeline" class="hover:text-yellow-soft transition">Timeline</a></li>
+                        <li><a href="#events" class="hover:text-yellow-soft transition">Events</a></li>
+                        <li><a href="#gallery" class="hover:text-yellow-soft transition">Gallery</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-head font-bold text-xl mb-6">Partners</h4>
+                    <div class="grid grid-cols-3 gap-4 opacity-70">
+                        <!-- Logos grayscale placeholders -->
+                        <div class="w-full h-12 bg-white/20 rounded-md"></div>
+                        <div class="w-full h-12 bg-white/20 rounded-md"></div>
+                        <div class="w-full h-12 bg-white/20 rounded-md"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-white/50 text-sm">KSPS2026: Labirin Pikiran &copy; 2026. All rights reserved.</p>
+                <button id="back-to-top" class="text-white/50 hover:text-white flex items-center gap-2 text-sm transition">
+                    Back to top <i class="ph ph-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Loader
+            window.addEventListener('load', () => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            });
+
+            // Sticky Navbar Setup
+            const navbar = document.getElementById('navbar');
+            const navContainer = document.getElementById('nav-container');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navContainer.classList.add('glass', 'shadow-sm');
+                    navbar.classList.remove('py-4');
+                    navbar.classList.add('py-2');
+                } else {
+                    navContainer.classList.remove('glass', 'shadow-sm');
+                    navbar.classList.add('py-4');
+                    navbar.classList.remove('py-2');
+                }
+            });
+
+            // Mobile Menu
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const closeBtn = document.getElementById('close-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.remove('hidden');
+                setTimeout(() => mobileMenu.classList.remove('opacity-0'), 10);
+            });
+
+            const closeMenu = () => {
+                mobileMenu.classList.add('opacity-0');
+                setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+            };
+
+            closeBtn.addEventListener('click', closeMenu);
+            mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+            // Scroll Reveal Animation
+            const reveals = document.querySelectorAll('.reveal');
+            const revealOnScroll = () => {
+                const windowHeight = window.innerHeight;
+                const elementVisible = 100;
+                
+                reveals.forEach(reveal => {
+                    const elementTop = reveal.getBoundingClientRect().top;
+                    if (elementTop < windowHeight - elementVisible) {
+                        reveal.classList.add('active');
+                    }
+                });
+            };
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll(); // Trigger on load
+
+            // Animated Counter
+            const counters = document.querySelectorAll('.counter');
+            const speed = 200; // The lower the slower
+            
+            const animateCounters = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const target = +counter.getAttribute('data-target');
+                        
+                        const updateCount = () => {
+                            const count = +counter.innerText;
+                            const inc = target / speed;
+                            if (count < target) {
+                                counter.innerText = Math.ceil(count + inc);
+                                setTimeout(updateCount, 20);
+                            } else {
+                                counter.innerText = target;
+                            }
+                        };
+                        updateCount();
+                        observer.unobserve(counter);
+                    }
+                });
+            };
+            const counterObserver = new IntersectionObserver(animateCounters, { threshold: 0.5 });
+            counters.forEach(counter => counterObserver.observe(counter));
+
+            // Interactive Tabs
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active from all
+                    tabBtns.forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white', 'active');
+                        b.classList.add('bg-gray-100', 'text-gray-600');
+                    });
+                    tabContents.forEach(c => c.classList.add('hidden'));
+
+                    // Add active to clicked
+                    btn.classList.remove('bg-gray-100', 'text-gray-600');
+                    btn.classList.add('bg-primary', 'text-white', 'active');
+                    document.getElementById(btn.getAttribute('data-tab')).classList.remove('hidden');
+                });
+            });
+
+            // Artwork Modal
+            const cards = document.querySelectorAll('.artwork-card');
+            const modal = document.getElementById('artwork-modal');
+            const modalContent = document.getElementById('modal-content');
+            const closeModalsBtn = document.getElementById('close-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+
+            const openModal = (card) => {
+                document.getElementById('modal-img').src = card.dataset.img;
+                document.getElementById('modal-title').innerText = card.dataset.title;
+                document.getElementById('modal-artist').innerText = card.dataset.artist;
+                document.getElementById('modal-category').innerText = card.dataset.category;
+                document.getElementById('modal-desc').innerText = card.dataset.desc;
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            };
+
+            const hideModal = () => {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            };
+
+            cards.forEach(card => card.addEventListener('click', () => openModal(card)));
+            closeModalsBtn.addEventListener('click', hideModal);
+            backdrop.addEventListener('click', hideModal);
+
+            // Back to top
+            document.getElementById('back-to-top').addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
